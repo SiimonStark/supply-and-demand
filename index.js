@@ -41,7 +41,6 @@ class Store {
         if (this.supply < this.demand && this.demand > 0) {
             // If there isn't enough supply, add the next purchaseOrder
             this.purchaseOrderHead = this.purchaseOrderHead + 1;
-            console.log('in handle >>', this.purchases[this.purchaseOrderHead])
             this.supply = this.supply + this.purchases[this.purchaseOrderHead].quantity;
 
             this.handleQueue(sale);
@@ -75,7 +74,7 @@ class Store {
         let foundOrder = this.shippingQueue.find((order) => order.saleID === saleID.toUpperCase());
 
         if (foundOrder) {
-            console.log('We found your order. Expected Delivery = ', foundOrder.deliveryDate);
+            console.log('Message: We found your order. Expected Delivery = ', foundOrder.deliveryDate);
         } else {
             console.log('Message: Order was not found, please make sure the Sales ID is correct');
         }
@@ -94,17 +93,16 @@ class Store {
 
         this.supply = this.purchases[this.purchaseOrderHead];
         this.purchaseOrderHead = 0;
+
         this.fillQueue();
-        this.showQueue();
     }
     addOrders(type, newOrders) {
         this[type] = [...this[type], ...newOrders];
-        console.log({ afterAdd: this[type] });
-        console.log('>>', this.purchaseOrderHead)
+
         this.purchaseOrderHead = 0;
         this.supply = this.purchases[this.purchaseOrderHead];
+
         this.fillQueue();
-        this.showQueue();
     }
     sortOrdersByDate(orderType) {
         let orderDateKey = orderType === 'sales' ? 'created' : 'receiving';
@@ -169,7 +167,7 @@ let ordersToAdd = [
     {
         'id': 'P6',
         'receiving': '2020-03-06',
-        'quantity': 3
+        'quantity': 1
     },
     {
         'id': 'P7',
@@ -180,8 +178,8 @@ let ordersToAdd = [
 
 currentStore.addOrders('purchases', ordersToAdd);
 
-// currentStore.updateOrder('purchases', {
-//     'id': 'P2',
-//     'receiving': new Date(),
-//     'quantity': 10
-// });
+currentStore.updateOrder('purchases', {
+    'id': 'P2',
+    'receiving': new Date(),
+    'quantity': 1
+});
