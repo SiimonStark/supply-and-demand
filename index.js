@@ -17,42 +17,31 @@ class Store {
         this.fillQueue();
     }
     fillQueue() {
-        this.sales.forEach((sale, index) => {
-            console.log({ sale, index }) //REMOVE
+        this.sales.forEach((sale) => {
             this.demand = sale.quantity;
-            if (this.purchases[this.purchaseOrderHead]) {
-                this.handleQueue(sale);
-            } else {
-                console.log('Message: Demand exceeds supply');
-            }
+            this.handleQueue(sale);
         });
-        this.showQueue(); //REMOVE
     }
     showQueue() {
         console.log('Queue at this time: ')
         console.log(this.shippingQueue);
     }
-    handleQueue(sale, currentSupply) {
+    handleQueue(sale) {
         let currentPurchaseOrder = this.purchases[this.purchaseOrderHead];
         if (!currentPurchaseOrder) {
             console.log('Message: Demand exceeds supply');
+            let queueObject = { saleID: sale.id, deliveryDate: 'TBD: awaiting restock' };
+            this.shippingQueue = [...this.shippingQueue, queueObject];
             return;
         }
 
-        // Todo: Refactor using 'this' values
         // If supply can support the sale, add sale to queue
         //   create queue object with sale_id and expected_delivery
-        console.log('new loop =========') //REMOVE
-        console.log({ currentPurchaseOrder }) //REMOVE
-        console.log('supply ', this.supply, ' <= demand ', this.demand) //REMOVE
-
         if (this.supply < this.demand && this.demand > 0) {
             // If there isn't enough supply, add the next purchaseOrder
             this.purchaseOrderHead = this.purchaseOrderHead + 1;
             this.supply = this.supply + this.purchases[this.purchaseOrderHead].quantity;
 
-            console.log('after compute = ', { supply: this.supply, demand: this.demand }) //REMOVE
-            console.log('Need to run again ♾') //REMOVE
             this.handleQueue(sale);
             return;
         }
@@ -70,26 +59,38 @@ class Store {
 
         let queueObject = { saleID: sale.id, deliveryDate };
         this.shippingQueue = [...this.shippingQueue, queueObject];
-        console.log('before exiting loop ', { queueObject, demand: this.demand, supply: this.supply }); //REMOVE
-        console.log('exit loop') //REMOVE
         return;
     }
     setDeliveryDate(shippingEstimate = 5) {
         let deliveryDate = new Date(this.purchases[this.purchaseOrderHead].receiving);
         let expectedShipping = (deliveryDate.getDate() + 1) + shippingEstimate;
+
         deliveryDate.setDate(expectedShipping);
+
         return deliveryDate.toLocaleString().split(',')[0];
+    }
+    showDeliveryDate(saleID) {
+        let foundOrder = this.shippingQueue.find((order) => order.saleID === saleID.toUpperCase());
+
+        if (foundOrder) {
+            console.log('We found your order. Expected Delivery = ', foundOrder.deliveryDate);
+        } else {
+            console.log('Message: Order was not found, please make sure the Sales ID is correct');
+        }
     }
     updateOrder(id, newQuantity) {
         let typeOfOrder = id.split('')[0] === 's' ? 'sales' : 'purchases';
         let orderToUpdate = this[typeOfOrder].find(order => order.id === id);
+
         if (orderToUpdate) {
             orderToUpdate.quantity = newQuantity;
         }
+
         console.log(orderToUpdate);
     }
     sortOrdersByDate(orderType) {
         let orderDateKey = orderType === 'sales' ? 'created' : 'receiving';
+
         if (this[orderType].length <= 1) {
             console.log(`Message: Not enough ${orderType} orders to sort`);
             return;
@@ -132,9 +133,8 @@ function allocate(salesOrders, purchaseOrders) {
     if (!currentStore) {
         currentStore = new Store(salesOrders, purchaseOrders);
         currentStore.initiateStore();
-
-        // currentStore.evaluateInventory(); //REMOVE
-        // console.log('After Sort => ', currentStore) //REMOVE
+        currentStore.showQueue();
+        console.log('After Sort => ', currentStore) //REMOVE
         return;
     } else {
         console.log('Store exists, updating current store');
@@ -143,3 +143,6 @@ function allocate(salesOrders, purchaseOrders) {
 }
 
 allocate(salesOrders, purchaseOrders);
+
+// Add extra function calls below this line
+// ----------------------------------------
