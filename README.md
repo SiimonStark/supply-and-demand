@@ -1,6 +1,30 @@
-# supply-and-demand
+## supply-and-demand
 
 This is a FIFO problem. We have products arriving based on supply, and then sent to customers based on demand.
+
+---
+
+## My Notes:
+
+I went rather overkill with the solution to this problem. However, I really want their to be the option to scale this in the future and had that in my mind while working the features. Keeping most functions and parameters dynamic should allow for a lot of flexiblity if I decide to add different products, more products, or changing some naming down the line.
+
+Had I taken an entire week on this (only a day and a half of work at point of writing), then I absolutely would have added a lot more error handling for potential slip ups in formatting passed by users. Maybe implent one or more of these three: build api routes, build frontend, or simply use "Inquirer" for CLI prompts.
+
+Tricky bits:
+
+- First time having to select a future date without MomentJS or similar
+- Was challenging to navigate both arrays at different/dynamic intervals
+  - Overcame this by recurrsively picking through the second array until first array item was complete
+
+### Final Result
+
+*(There are more features like update and add ready to call)*
+
+- Screen Capture of Queue after Allocation
+
+![Screen Capture of Queue after Allocation](/screenCap.PNG)
+
+# Instructions Given: 
 
 - Demand is from customers
 
