@@ -4,7 +4,7 @@ This is a FIFO problem. We have products arriving based on supply, and then sent
 
 ---
 
-**Link to [Repl.it 🔗]('https://replit.com/@SiimonStark/supply-and-demand#index.js') to run code in the browser**
+**Link to [Repl.it 🔗](https://replit.com/@SiimonStark/supply-and-demand#index.js) to run code in the browser**
 
 ## My Notes:
 
