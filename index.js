@@ -4,80 +4,81 @@ class Store {
     constructor(salesOrders = [], purchaseOrders = []) {
         this.sales = salesOrders;
         this.purchases = purchaseOrders;
-        this.queue = [];
+        this.shippingQueue = [];
         this.totalDemand = this.setTotals('sales');
         this.totalSupply = this.setTotals('purchases');
-        this.demand = salesOrders[0].quantity || 0;
-        this.supply = purchaseOrders[0].quantity || 0;
-        this.head = 0;
-        this.tail = 0;
+        this.purchaseOrderHead = 0;
     }
     initiateStore() {
         this.sortOrdersByDate('sales');
         this.sortOrdersByDate('purchases');
+        this.demand = this.sales[0].quantity;
+        this.supply = this.purchases[0].quantity;
         this.fillQueue();
     }
     fillQueue() {
         this.sales.forEach((sale, index) => {
-            console.log({ sale, index })
-            if (sale.quantity < this.supply) {
+            console.log({ sale, index }) //REMOVE
+            this.demand = sale.quantity;
+            if (this.purchases[this.purchaseOrderHead]) {
                 this.handleQueue(sale);
+            } else {
+                console.log('Message: Demand exceeds supply');
             }
         });
-        console.log(this.showQueue());
+        this.showQueue(); //REMOVE
     }
     showQueue() {
         console.log('Queue at this time: ')
-        console.log(this.queue);
+        console.log(this.shippingQueue);
     }
     handleQueue(sale, currentSupply) {
-        let currentPurchaseOrder = this.purchases[0];
+        let currentPurchaseOrder = this.purchases[this.purchaseOrderHead];
         if (!currentPurchaseOrder) {
             console.log('Message: Demand exceeds supply');
             return;
         }
 
         // Todo: Refactor using 'this' values
-        console.log('Annoying ## ', { supply: this.supply }) //REMOVE
-        let demand = sale.quantity;
-        let supply;
-        if (currentSupply) {
-            supply = currentPurchaseOrder.quantity + currentSupply;
-        } else {
-            supply = currentPurchaseOrder.quantity;
-        }
-
+        // If supply can support the sale, add sale to queue
+        //   create queue object with sale_id and expected_delivery
         console.log('new loop =========') //REMOVE
         console.log({ currentPurchaseOrder }) //REMOVE
-        console.log('supply ', supply, ' <= demand ', demand) //REMOVE
+        console.log('supply ', this.supply, ' <= demand ', this.demand) //REMOVE
 
-        if (supply <= demand) {
-            this.purchases = this.purchases.slice(1);
-            demand = demand - supply;
-            console.log('after compute = ', { demand, supply }) //REMOVE
-            if (demand > 0) {
-                console.log('Need to run again ♾') //REMOVE
-                this.handleQueue(sale, supply);
-                return;
-            }
-        } else {
-            this.purchases[0].quantity = currentPurchaseOrder.quantity - demand;
+        if (this.supply < this.demand && this.demand > 0) {
+            // If there isn't enough supply, add the next purchaseOrder
+            this.purchaseOrderHead = this.purchaseOrderHead + 1;
+            this.supply = this.supply + this.purchases[this.purchaseOrderHead].quantity;
 
-            let deliveryDate = new Date(this.purchases[0].receiving);
-            let shippingEstimate = 5;
-            let expectedShipping = (deliveryDate.getDate() + 1) + shippingEstimate;
-            deliveryDate.setDate(expectedShipping);
-            const formattedDeliveryDate = deliveryDate.toLocaleString();
-
-            let queueObject = {
-                saleID: sale.id, deliveryDate: formattedDeliveryDate
-            }
-            this.queue = [...this.queue, queueObject];
-            console.log('before exiting loop ', { queueObject, demand: 0, supply: this.purchases[0].quantity }); //REMOVE
-            console.log('exit loop') //REMOVE
+            console.log('after compute = ', { supply: this.supply, demand: this.demand }) //REMOVE
+            console.log('Need to run again ♾') //REMOVE
+            this.handleQueue(sale);
             return;
         }
 
+        this.supply = this.supply - this.demand;
+        this.demand = 0;
+        let deliveryDate = this.setDeliveryDate();
+
+        if (this.supply <= 0) {
+            this.purchaseOrderHead = this.purchaseOrderHead + 1;
+            if (this.purchases[this.purchaseOrderHead]) {
+                this.supply = this.purchases[this.purchaseOrderHead].quantity;
+            }
+        }
+
+        let queueObject = { saleID: sale.id, deliveryDate };
+        this.shippingQueue = [...this.shippingQueue, queueObject];
+        console.log('before exiting loop ', { queueObject, demand: this.demand, supply: this.supply }); //REMOVE
+        console.log('exit loop') //REMOVE
+        return;
+    }
+    setDeliveryDate(shippingEstimate = 5) {
+        let deliveryDate = new Date(this.purchases[this.purchaseOrderHead].receiving);
+        let expectedShipping = (deliveryDate.getDate() + 1) + shippingEstimate;
+        deliveryDate.setDate(expectedShipping);
+        return deliveryDate.toLocaleString().split(',')[0];
     }
     updateOrder(id, newQuantity) {
         let typeOfOrder = id.split('')[0] === 's' ? 'sales' : 'purchases';
@@ -118,12 +119,6 @@ class Store {
         return this[type].reduce((total, order) => {
             return total += order.quantity;
         }, 0);
-        // this.demand = this.sales.reduce((total, order) => { //REMOVE
-        //     return total += order.quantity; //REMOVE
-        // }, 0); //REMOVE
-        // this.supply = this.purchases.reduce((total, order) => { //REMOVE
-        //     return total += order.quantity; //REMOVE
-        // }, 0); //REMOVE
     }
 }
 
