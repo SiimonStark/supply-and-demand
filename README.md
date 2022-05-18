@@ -4,6 +4,8 @@ This is a FIFO problem. We have products arriving based on supply, and then sent
 
 ---
 
+**Link to [Repl.it 🔗]('https://replit.com/@SiimonStark/supply-and-demand#index.js') to run code in the browser**
+
 ## My Notes:
 
 I went rather overkill with the solution to this problem. However, I really want their to be the option to scale this in the future and had that in my mind while working the features. Keeping most functions and parameters dynamic should allow for a lot of flexiblity if I decide to add different products, more products, or changing some naming down the line.
