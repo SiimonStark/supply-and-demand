@@ -17,6 +17,7 @@ class Store {
         this.fillQueue();
     }
     fillQueue() {
+        this.shippingQueue = [];
         this.sales.forEach((sale) => {
             this.demand = sale.quantity;
             this.handleQueue(sale);
@@ -40,6 +41,7 @@ class Store {
         if (this.supply < this.demand && this.demand > 0) {
             // If there isn't enough supply, add the next purchaseOrder
             this.purchaseOrderHead = this.purchaseOrderHead + 1;
+            console.log('in handle >>', this.purchases[this.purchaseOrderHead])
             this.supply = this.supply + this.purchases[this.purchaseOrderHead].quantity;
 
             this.handleQueue(sale);
@@ -78,15 +80,31 @@ class Store {
             console.log('Message: Order was not found, please make sure the Sales ID is correct');
         }
     }
-    updateOrder(id, newQuantity) {
-        let typeOfOrder = id.split('')[0] === 's' ? 'sales' : 'purchases';
-        let orderToUpdate = this[typeOfOrder].find(order => order.id === id);
-
-        if (orderToUpdate) {
-            orderToUpdate.quantity = newQuantity;
+    updateOrder(type, orderInfo) {
+        if (!orderInfo) {
+            console.log('Error Message: No orderInfo provided.Expected format = {"id": string,"receiving/created": yyyy-mm-dd,"quantity": integer},')
         }
+        let foundIndex = this[type].findIndex((order) => order.id === orderInfo.id);
+        if (!foundIndex) {
+            console.log(`Message: No existing order with id of ${orderInfo.id}`);
+        }
+        this[type][foundIndex] = orderInfo;
 
-        console.log(orderToUpdate);
+        console.log('Message: Order updated ✅')
+
+        this.supply = this.purchases[this.purchaseOrderHead];
+        this.purchaseOrderHead = 0;
+        this.fillQueue();
+        this.showQueue();
+    }
+    addOrders(type, newOrders) {
+        this[type] = [...this[type], ...newOrders];
+        console.log({ afterAdd: this[type] });
+        console.log('>>', this.purchaseOrderHead)
+        this.purchaseOrderHead = 0;
+        this.supply = this.purchases[this.purchaseOrderHead];
+        this.fillQueue();
+        this.showQueue();
     }
     sortOrdersByDate(orderType) {
         let orderDateKey = orderType === 'sales' ? 'created' : 'receiving';
@@ -146,3 +164,24 @@ allocate(salesOrders, purchaseOrders);
 
 // Add extra function calls below this line
 // ----------------------------------------
+
+let ordersToAdd = [
+    {
+        'id': 'P6',
+        'receiving': '2020-03-06',
+        'quantity': 3
+    },
+    {
+        'id': 'P7',
+        'receiving': '2020-03-30',
+        'quantity': 1
+    }
+]
+
+currentStore.addOrders('purchases', ordersToAdd);
+
+// currentStore.updateOrder('purchases', {
+//     'id': 'P2',
+//     'receiving': new Date(),
+//     'quantity': 10
+// });
